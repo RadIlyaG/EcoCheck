@@ -83,13 +83,15 @@ proc EcoData2DB {ecoFile} {
   set ecoFileName [lindex [split $ecoTail .] 0]
   set ecoUnits [lsort -dictionary [set ::a${ecoFileName}(AI)]]
   puts "EcoData2DB ecoUnits:<$ecoUnits>"
+  
+  ## meantime all products/units, mentioned in YZ' file, should be inserted to ReleasedNotApproved
   set initsToReleasedNotApproved $ecoUnits
     
   sqlite3 dataBase $::db_file
   dataBase timeout 5000
   
   # ## create list of products/units that mentioned in YZ' file, exist in ReleasedApproved and have ApprInAdv = 'no'
-  # ## such unit must be inseted to ReleasedNotApproved
+  # ## such unit must be inserted to ReleasedNotApproved
   # catch {dataBase eval {SELECT Unit from ReleasedApproved WHERE (ECO = $ecoFileName AND ApprInAdv = 'no')}} notAiAunits
   # set notAiAunits [lsort -dictionary $notAiAunits]
   # puts "notAiAunits:<$notAiAunits>"
@@ -100,34 +102,40 @@ proc EcoData2DB {ecoFile} {
   set yesAiAunits [lsort -dictionary $yesAiAunits]
   puts "yesAiAunits:<$yesAiAunits>"
   
-  if 0 {
-  set initsToReleasedNotApproved ""
-  foreach unit $ecoUnits {
-    if {[lsearch $notAiAunits $unit]!="-1"} {
-      lappend initsToReleasedNotApproved $unit
-    }    
-  }
-  foreach unit $ecoUnits {
-    if {[lsearch $yesAiAunits $unit]=="-1"} {
-      lappend initsToReleasedNotApproved $unit
-    }    
-  }
-  set initsToReleasedNotApproved [lsort -unique $initsToReleasedNotApproved]
-  }
+  # if 0 {
+  # set initsToReleasedNotApproved ""
+  # foreach unit $ecoUnits {
+    # if {[lsearch $notAiAunits $unit]!="-1"} {
+      # lappend initsToReleasedNotApproved $unit
+    # }    
+  # }
+  # foreach unit $ecoUnits {
+    # if {[lsearch $yesAiAunits $unit]=="-1"} {
+      # lappend initsToReleasedNotApproved $unit
+    # }    
+  # }
+  # set initsToReleasedNotApproved [lsort -unique $initsToReleasedNotApproved]
+  # }
+  
+  ## remove from final list all ApprovedInAnvance products/units
   foreach ecoUnit $ecoUnits {
     foreach yesAiAunit $yesAiAunits {
       if {$ecoUnit==$yesAiAunit} {
-        set indx [lsearch $ecoUnits $yesAiAunit]
+        set indx [lsearch $initsToReleasedNotApproved $yesAiAunit]
         set initsToReleasedNotApproved [lreplace $initsToReleasedNotApproved $indx $indx]
       }
     }
   }  
   puts "initsToReleasedNotApproved:<$initsToReleasedNotApproved>"
   
+  ## add products/units to ReleasedNotApproved
   foreach unit $initsToReleasedNotApproved {
     set number [set ::a${ecoFileName}(number)]
     set relDate [set ::a${ecoFileName}(releise_date)]
-    catch {dataBase eval {INSERT INTO ReleasedNotApproved VALUES($number,$unit,$relDate)}} res
+    if [catch {dataBase eval {INSERT INTO ReleasedNotApproved VALUES($number,$unit,$relDate)}} res] {
+      puts "res INSERT INTO ReleasedNotApproved $unit: <$res>"
+    }
+    
   }
   dataBase close
   

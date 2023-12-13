@@ -137,3 +137,19 @@ proc EcoData2DB {ecoFile} {
   
   return $res  
 }
+
+proc cl {} {
+set ol [list 1 2 3 4 5 6 7 8]
+set fl $ol
+set nol [list 3 5 7]
+foreach o $ol {
+  foreach no $nol {
+    if {$o==$no} {
+      set indx [lsearch $fl $no]
+      set fl [lreplace $fl $indx $indx]
+      puts "$fl"
+    }
+  }
+}
+  
+}
