@@ -11,15 +11,29 @@ proc Gui {} {
   wm title . "ECO/NPI/NOI Verification"
   wm protocol . WM_DELETE_WINDOW {Quit}
   
-  set ::rbMode rna
-  set ::appEcAi awe
+  set ::rbMode apprNewRel
+  set ::appEcAi apprWholeEco
   
-  pack [TitleFrame .frChooseMode -text "Choose Mode" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
-    set fr [.frChooseMode getframe]
+  set mainframe [MainFrame .mainframe]
+    set tb0 [$mainframe addtoolbar]
+    pack $tb0 -fill x
+    set bb [ButtonBox $tb0.bbox0 -spacing 1 -padx 5 -pady 5]
+    set gaGui(tbRefresh) [$bb add -image [image create photo -file  images/refresh.ico] \
+        -takefocus 1 -command {} -bd 1 -padx 5 -pady 5 -helptext "Refresh"]		 		 
+    pack $bb -side left  -anchor w -padx 2 ;#-pady 3
+    set bb [ButtonBox $tb0.bbox1 -spacing 1 -padx 5 -pady 5]
+    set gaGui(tbClear) [$bb add -image [image create photo -file  images/clear1.ico] \
+        -takefocus 1 -command {} -bd 1 -padx 5 -pady 5 -helptext "Clear the form"]		 		 
+    pack $bb -side left  -anchor w -padx 2 ;#-pady 3
+    
+    set mf [$mainframe getframe]
+  
+  pack [TitleFrame $mf.frChooseMode -text "Choose Mode" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
+    set fr [$mf.frChooseMode getframe]
     set gaApprGui(rbModeRnA) [radiobutton $fr.rbModeRnA -text "Approve new Released Change" \
-        -value rna -variable ::rbMode -command ToggleListBox] 
+        -value apprNewRel -variable ::rbMode -command ToggleListBox] 
     set gaApprGui(rbModeAiA) [radiobutton $fr.rbModeAiA -text "Approve in Advance" \
-        -value aia -variable ::rbMode -command ToggleListBox]
+        -value apprInAdv -variable ::rbMode -command ToggleListBox]
     
     set gaApprGui(frANewListBox) [frame $fr.frANewListBox -bd 0 -relief groove] 
       set fr123 [frame $gaApprGui(frANewListBox).fr123 -bd 2 -relief groove] 
@@ -28,21 +42,16 @@ proc Gui {} {
         set gaApprGui(lbANew) [ListBox $fr123.lbANew -yscrollcommand "$fr123.yscroll set" \
             -height 3 -width 10 -selectmode single]
         bind $gaApprGui(lbANew)  <Double-1> {EcoToHandle} 
-        #grid  $gaApprGui(lbANew) $fr123.yscroll -sticky nw  -padx 2 -pady 2  
         pack $gaApprGui(lbANew) -side left -fill both -expand 1 
       grid $fr123 -sticky nswe  
-    # set gaApprGui(frEntAppInAdv) [frame $fr.frEntAppInAdv -bd 0 -relief groove] 
-      # set gaApprGui(entAiA) [Entry $gaApprGui(frEntAppInAdv).entAiA]
-      # grid  $gaApprGui(entAiA)  -sticky n
       grid $gaApprGui(rbModeRnA) $gaApprGui(frANewListBox) -padx 2 -pady 0 -sticky nw
       grid $gaApprGui(rbModeAiA) -padx 2 -pady 0 -sticky nw
-    grid $gaApprGui(frANewListBox)  -padx 2 -pady 2 -sticky nswe ; #$gaApprGui(frEntAppInAdv)
+    grid $gaApprGui(frANewListBox)  -padx 2 -pady 2 -sticky nswe
           
-  pack [TitleFrame .frEco -text "Handled ECO/NPI/NOI" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
-    set fr [.frEco getframe]
+  pack [TitleFrame $mf.frEco -text "Handled ECO/NPI/NOI" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
+    set fr [$mf.frEco getframe]
     set fr1 [frame $fr.fr1]
       set gaApprGui(entEco) [Entry $fr1.entEco]
-      #set butGetAI [Button $fr1.butGetAI -text "Get Affected Items" -command ButGetAI]
       set fr345 [frame $fr1.fr345 -bd 2 -relief groove] 
           pack [label $fr345.l1 -text "All Affected Items"]
           scrollbar $fr345.yscroll -command {$gaApprGui(lbAI) yview} -orient vertical
@@ -69,14 +78,14 @@ proc Gui {} {
       
     set fr2 [frame $fr.fr2 -bd 2 -relief groove]  
       set gaApprGui(rbApprWholeEco) [radiobutton $fr2.rbApprWholeEco -text "Approve whole ECO/NPI/NFI"\
-          -value awe -variable ::appEcAi]
+          -value apprWholeEco -variable ::appEcAi]
       set gaApprGui(rbApprAffInits) [radiobutton $fr2.rbApprAffInits -text "Approve selected Affected Items"\
-          -value aai -variable ::appEcAi]
+          -value apprSelItems -variable ::appEcAi]
       pack $gaApprGui(rbApprWholeEco) $gaApprGui(rbApprAffInits) -anchor w -padx 2
     pack $fr1 $fr2 -fill both -padx 2 -pady 2 
 
-  pack [TitleFrame .frVerItems -text "Verified Items" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
-    set fr [.frVerItems getframe]
+  pack [TitleFrame $mf.frVerItems -text "Verified Items" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
+    set fr [$mf.frVerItems getframe]
     set fr1 [frame $fr.fr1]
       foreach item [list Thing1 Thing2 Thing3 Thing4] {
         set gaApprGui(chb$item) [checkbutton $fr1.chb$item -text $item -variable ::verItems$item]
@@ -84,17 +93,16 @@ proc Gui {} {
       }
     pack $fr1 -fill both -padx 2 -pady 2 
  
-  pack [TitleFrame .frApprover -text "Approver" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
-    set fr [.frApprover getframe]
+  pack [TitleFrame $mf.frApprover -text "Approver" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
+    set fr [$mf.frApprover getframe]
     set lab [Label $fr.lab -text "Appover's Empl. Number"]
     set gaApprGui(entAppEmplNumber) [Entry $fr.entAppEmplNumber -justify center -width 10 -state normal -editable 1 ]
     grid $lab $gaApprGui(entAppEmplNumber) -padx 2 -pady 3 -sticky ew
   
-  pack [frame .frBut ] -pady 4 -anchor e
-    #pack [Button .frBut.butCanc -text Cancel -command [list ButCancGuiEco ] -width 7] -side right -padx 6
-    pack [Button .frBut.butSaveNew -text "Approve" -command [list ButApproveGuiEco ] -width 11]  -side right -padx 6
-    #pack [Button .frBut.butSave -text "Save & Close" -command [list ButSaveGuiEco ] -width 13]  -side right -padx 6
-   
+  pack [frame $mf.frBut ] -pady 4 -anchor e
+    pack [Button $mf.frBut.butSaveNew -text "Approve" -command [list ButApproveGuiEco ] -width 11]  -side right -padx 6
+    
+  pack $mainframe -fill both -expand yes
   ToggleListBox
   
   bind . <F1> {console show}
@@ -145,7 +153,7 @@ proc ClearAffectedItems {} {
 proc ToggleListBox {} {
   global gaApprGui 
   puts "\nToggleListBox $::rbMode"
-  if {$::rbMode=="rna"} {     
+  if {$::rbMode=="apprNewRel"} {     
     #$gaApprGui(entAiA) configure -state disabled
     $gaApprGui(lbANew) configure -state normal
     # grid forget $gaApprGui(frEntAppInAdv)
@@ -154,8 +162,8 @@ proc ToggleListBox {} {
     if {$ret!=0} {return $ret}
     set ret [CheckRnADB]
     if {$ret!=0} {return $ret}
-  } elseif {$::rbMode=="aia"} {
-    set ::appEcAi aai
+  } elseif {$::rbMode=="apprInAdv"} {
+    set ::appEcAi apprSelItems
     $gaApprGui(lbANew) configure -state disabled
     $gaApprGui(entEco) delete 0 end
     $gaApprGui(lbAI) delete [$gaApprGui(lbAI) items]
@@ -274,7 +282,12 @@ proc ButCancGuiEco {} {
 # ButApproveGuiEco
 # ***************************************************************************
 proc ButApproveGuiEco {} {
+  global gaApprGui
   set ret [MoveEcoFromRNAtoRA]
+  if {$ret==0} {
+    DialogBox -title "Approve done" -text "[$gaApprGui(entEco) cget -text] approved successfully" -icon /images/info
+    ToggleListBox
+  }
 }
 # ***************************************************************************
 # ButSaveGuiEco
@@ -294,9 +307,9 @@ proc MoveEcoFromRNAtoRA {} {
   set ret [DbFileExists]
   if {$ret!=0} {return $ret}
   
-  if {$::rbMode=="rna"} { 
+  if {$::rbMode=="apprNewRel"} { 
     set aiaFlag "no"
-  } elseif {$::rbMode=="aia"} { 
+  } elseif {$::rbMode=="apprInAdv"} { 
     set aiaFlag "yes"
     set apprDate [clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S"]
   }  
@@ -306,19 +319,25 @@ proc MoveEcoFromRNAtoRA {} {
   
   set eco [$gaApprGui(entEco) cget -text]
   
-  if {$::rbMode=="rna"} { 
-    if {$::appEcAi=="awe"} {
+  if {$::rbMode=="apprNewRel"} { 
+    if {$::appEcAi=="apprWholeEco"} {
       catch {dataBase eval {SELECT * from ReleasedNotApproved WHERE ECO=$eco}} ecoData
-    } elseif {$::appEcAi=="aai"} {
+      after 1000
+      catch {dataBase eval {DELETE from ReleasedNotApproved WHERE ECO=$eco}} delres
+      puts "delres:<$delres>"
+    } elseif {$::appEcAi=="apprSelItems"} {
       set selectedItems [$gaApprGui(lbSelAI) items] ; set where ""
       foreach selItem $selectedItems {
         append where " Unit = \'$selItem\' OR"
       }
       set where [string trimright $where " OR"]
-      puts <$where>  
+      puts "where:<$where>"  
       catch {dataBase eval "SELECT * from ReleasedNotApproved WHERE ECO=\'$eco\' AND ($where)"} ecoData
+      after 1000
+      catch {dataBase eval "DELETE from ReleasedNotApproved WHERE ECO=\'$eco\' AND ($where)"} delres
+      puts "delres:<$delres>"
     }
-  } elseif {$::rbMode=="aia"} { 
+  } elseif {$::rbMode=="apprInAdv"} { 
     set selectedItems [$gaApprGui(lbSelAI) items]
     foreach selItem $selectedItems {
        lappend ecoData $eco $selItem $apprDate
@@ -327,7 +346,7 @@ proc MoveEcoFromRNAtoRA {} {
   puts "ecoData:<$ecoData>"
   
   foreach {eco unit date} $ecoData {
-    if {$::rbMode=="aia"} { 
+    if {$::rbMode=="apprInAdv"} { 
       set date $apprDate
     }  
     append values "(\'$eco\', \'$unit\', \'$date\', \'$::apprName\', \'$aiaFlag\'),"
@@ -338,6 +357,7 @@ proc MoveEcoFromRNAtoRA {} {
   puts "res:<$res>"
   dataBase close
   
+  $gaApprGui(lbSelAI) delete [$gaApprGui(lbSelAI) items]
   return 0  
 }
 # ***************************************************************************
@@ -357,7 +377,7 @@ proc Sanity {} {
   }
   
   set selectedItems [$gaApprGui(lbSelAI) items]
-  if {$::appEcAi=="aai" && $selectedItems==""} {
+  if {$::appEcAi=="apprSelItems" && $selectedItems==""} {
     tk_messageBox -title "Sanity check" -icon error -type ok \
       -message "No Affected Items to approve"
     focus -force  $gaApprGui(lbAI)
