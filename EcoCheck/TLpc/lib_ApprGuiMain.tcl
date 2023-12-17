@@ -283,6 +283,10 @@ proc ButCancGuiEco {} {
 # ***************************************************************************
 proc ButApproveGuiEco {} {
   global gaApprGui
+  set ret [Sanity]
+  if {$ret!=0} {return $ret}
+  
+  
   set ret [MoveEcoFromRNAtoRA]
   if {$ret==0} {
     DialogBox -title "Approve done" -text "[$gaApprGui(entEco) cget -text] approved successfully" -icon /images/info
@@ -300,9 +304,6 @@ proc ButSaveGuiEco {} {
 # ***************************************************************************
 proc MoveEcoFromRNAtoRA {} {
   global gaApprGui
-  
-  set ret [Sanity]
-  if {$ret!=0} {return $ret}
   
   set ret [DbFileExists]
   if {$ret!=0} {return $ret}
