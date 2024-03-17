@@ -19,7 +19,7 @@ proc Gui {} {
     pack $tb0 -fill x
     set bb [ButtonBox $tb0.bbox0 -spacing 1 -padx 5 -pady 5]
     set gaGui(tbRefresh) [$bb add -image [image create photo -file  images/refresh.ico] \
-        -takefocus 1 -command {} -bd 1 -padx 5 -pady 5 -helptext "Refresh"]		 		 
+        -takefocus 1 -command {MainEcoPolling} -bd 1 -padx 5 -pady 5 -helptext "Refresh"]		 		 
     pack $bb -side left  -anchor w -padx 2 ;#-pady 3
     set bb [ButtonBox $tb0.bbox1 -spacing 1 -padx 5 -pady 5]
     set gaGui(tbClear) [$bb add -image [image create photo -file  images/clear1.ico] \
@@ -203,7 +203,9 @@ proc CheckRnADB {} {
   if [llength $ecos] {
     foreach eco $ecos {
       $gaApprGui(lbANew) insert end $eco -text $eco
+      
     }  
+    $gaApprGui(lbANew) configure -height [expr {0+[llength $ecos]}]
   }
   return 0
 }

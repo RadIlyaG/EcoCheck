@@ -50,7 +50,11 @@ proc ReadEcoFiles {} {
         puts "ret of DeleteEcoFile: <$ret>"    
         AddToLog "$ecoFile"        
       }
+    } else {
+      puts "No new ECO files"
+      AddToLog "No new ECO files"
     }
+    
   }
   AddToLog "Done"
   return $ret
@@ -194,5 +198,5 @@ proc DeleteEcoFile {ecoFile} {
   return 0
 }
 
-MainEcoPolling
-exit
+#MainEcoPolling
+#exit
