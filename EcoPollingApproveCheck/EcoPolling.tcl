@@ -2,7 +2,7 @@ package require sqlite3
 set db_file     //prod-svm1/tds/Temp/SQLiteDB/EcoCheck.db
 set ecoFilePath //prod-svm1/tds/Temp/SQLiteDB/EcoNoiNpi
 package require json
-console show
+#console show
 
 
 # ***************************************************************************
@@ -26,6 +26,9 @@ proc AddToLog {txt} {
 # ***************************************************************************
 proc ReadEcoFiles {} {
   set ::log c:/logs/EcoPollingLog.txt
+  if ![file exists c:/logs] {
+    file mkdir c:/logs
+  }
   if ![file exists $::ecoFilePath] {
     tk_messageBox -type ok -title "No path" -message "The \'$::ecoFilePath\' doesn't exist"
     set ret -1
@@ -198,5 +201,7 @@ proc DeleteEcoFile {ecoFile} {
   return 0
 }
 
-#MainEcoPolling
-#exit
+if {[lindex $argv 0]=="Run"} {
+  MainEcoPolling
+  exit
+}  

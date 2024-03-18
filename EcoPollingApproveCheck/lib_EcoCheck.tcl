@@ -5,6 +5,7 @@ set db_file \\\\prod-svm1\\tds\\Temp\\SQLiteDB\\EcoCheck.db
 
 # ***************************************************************************
 # MainEcoCheck
+# MainEcoCheck 1001793762
 # ***************************************************************************
 proc MainEcoCheck {unit} {
   set ret [DbFileExists]
@@ -17,13 +18,13 @@ proc MainEcoCheck {unit} {
     }
     set lis [string trimright $lis " ,"]
     if {[llength $lis]==1} {
-      set verb "was"
+      set verb "is"
     } else {
-      set verb "were"
+      set verb "are"
     }
     set txt "The following change/s for \'$unit\' $verb released:\n\n$lis\n\nConsult with your team Leader"
-    set txt "There is unapprovved ECO/NPI/NOI for the tested option\n$lis\n\n
-    The ATE is locked. Please contact your Team Leader"
+    set txt "There $verb unapproved ECO/NPI/NOI for the tested option:\n\n$lis\n\n
+    The ATE is locked. Contact your Team Leader"
     tk_messageBox -message $txt -type ok -icon error -title "Unapproved changes"
     set ret $txt
   } 
@@ -56,7 +57,14 @@ proc CheckDB {unit} {
   dataBase close
   return $res
 }
-console show
+
+if {[lindex $argv 0]=="Run"} {
+  console show
+  MainEcoCheck ETX-2-100G-4QSFP-16SFPP-GB-M
+  puts "MainEcoCheck ETX-2-100G-4QSFP-16SFPP-GB-M"
+  #exit
+}  
+#console show
 
 
 

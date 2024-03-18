@@ -1,5 +1,5 @@
 wm iconify . ; update
-#console show
+#console show 
 package require registry
 set jav [registry -64bit get "HKEY_LOCAL_MACHINE\\SOFTWARE\\javasoft\\Java Runtime Environment" CurrentVersion]
 set gaSet(javaLocation) [file normalize [registry -64bit get "HKEY_LOCAL_MACHINE\\SOFTWARE\\javasoft\\Java Runtime Environment\\$jav" JavaHome]/bin]
@@ -22,7 +22,7 @@ package require RLAutoSync
 proc TesterAutoSync {} {
   global gaSet gMessage
 
-  set s1 [file normalize //prod-svm1/tds/AT-Testers/JER_AT/ilya/Tools/EcoCheckProject/EcoCheck/TLpc]
+  set s1 [file normalize //prod-svm1/tds/AT-Testers/JER_AT/ilya/Tools/EcoCheckProject/EcoPollingApproveCheck]
   set d1 [file normalize  [pwd]]
   set sdL [list $s1 $d1]
   set emailL [list]
