@@ -21,10 +21,10 @@ proc Gui {} {
     set gaGui(tbRefresh) [$bb add -image [image create photo -file  images/refresh.ico] \
         -takefocus 1 -command {MainEcoPolling} -bd 1 -padx 5 -pady 5 -helptext "Refresh"]		 		 
     pack $bb -side left  -anchor w -padx 2 ;#-pady 3
-    set bb [ButtonBox $tb0.bbox1 -spacing 1 -padx 5 -pady 5]
-    set gaGui(tbClear) [$bb add -image [image create photo -file  images/clear1.ico] \
-        -takefocus 1 -command {} -bd 1 -padx 5 -pady 5 -helptext "Clear the form"]		 		 
-    pack $bb -side left  -anchor w -padx 2 ;#-pady 3
+    # set bb [ButtonBox $tb0.bbox1 -spacing 1 -padx 5 -pady 5]
+    # set gaGui(tbClear) [$bb add -image [image create photo -file  images/clear1.ico] \
+        # -takefocus 1 -command {} -bd 1 -padx 5 -pady 5 -helptext "Clear the form"]		 		 
+    # pack $bb -side left  -anchor w -padx 2 ;#-pady 3
     
     set mf [$mainframe getframe]
   
@@ -40,12 +40,14 @@ proc Gui {} {
         scrollbar $fr123.yscroll -command {$gaApprGui(lbANew) yview} -orient vertical
         pack   $fr123.yscroll -side right -fill y
         set gaApprGui(lbANew) [ListBox $fr123.lbANew -yscrollcommand "$fr123.yscroll set" \
-            -height 3 -width 10 -selectmode single]
+            -height 3 -width 12 -selectmode single]
         bind $gaApprGui(lbANew)  <Double-1> {EcoToHandle} 
+        bind $gaApprGui(lbANew)  <1> {EcoToHandle} 
+        bind $gaApprGui(lbANew)  <<Copy>> {CopyItem %W}  
         pack $gaApprGui(lbANew) -side left -fill both -expand 1 
       grid $fr123 -sticky nswe  
       grid $gaApprGui(rbModeRnA) $gaApprGui(frANewListBox) -padx 2 -pady 0 -sticky nw
-      grid $gaApprGui(rbModeAiA) -padx 2 -pady 0 -sticky nw
+      #grid $gaApprGui(rbModeAiA) -padx 2 -pady 0 -sticky nw
     grid $gaApprGui(frANewListBox)  -padx 2 -pady 2 -sticky nswe
           
   pack [TitleFrame $mf.frEco -text "Handled ECO/NPI/NOI" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
@@ -57,8 +59,9 @@ proc Gui {} {
           scrollbar $fr345.yscroll -command {$gaApprGui(lbAI) yview} -orient vertical
           pack   $fr345.yscroll -side right -fill y
           set gaApprGui(lbAI) [ListBox $fr345.lbAI -yscrollcommand "$fr345.yscroll set" \
-              -height 6 -width 50 -selectmode single]
+              -height 6 -width 45 -selectmode single]
           bind $gaApprGui(lbAI)  <Double-1> {CheckAI}  
+          bind $gaApprGui(lbAI)  <<Copy>> {CopyItem %W}  
                  
           pack $gaApprGui(lbAI) -side left -fill both -expand 1 
       pack $gaApprGui(entEco) $fr345 -side left -padx 2 -pady 2 -anchor n ; # $butGetAI
@@ -69,7 +72,7 @@ proc Gui {} {
           scrollbar $fr678.yscroll -command {$gaApprGui(lbSelAI) yview} -orient vertical
           pack   $fr678.yscroll -side right -fill y
           set gaApprGui(lbSelAI) [ListBox $fr678.lbSelAI -yscrollcommand "$fr678.yscroll set" \
-              -height 6 -width 50 -selectmode single]
+              -height 6 -width 45 -selectmode single]
           DynamicHelp::add $gaApprGui(lbSelAI) -text "Click Right Mouse Button to paste copied Item/s"
           bind $gaApprGui(lbSelAI)  <Double-1> {UnCheckAI} 
           bind $gaApprGui(lbSelAI)  <ButtonRelease-3>  {AddAffectedItemsPop %X %Y}   
@@ -88,7 +91,7 @@ proc Gui {} {
   pack [TitleFrame $mf.frVerItems -text "Verified Items" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
     set fr [$mf.frVerItems getframe]
     set fr1 [frame $fr.fr1]
-      foreach item [list fti ucf ate mech] itemName [list "FTI" "User Conf. File" "ATE Adjustment" "Mechanics"] {
+      foreach item [list fti ucf ate mech] itemName [list "FTI" "User Configuration File" "ATE Adjustment" "Mechanics"] {
         set gaApprGui(chb$item) [checkbutton $fr1.chb$item -text $itemName -variable ::verItems$item]
         array set ::gaVerItems [list $item $itemName]
         pack $gaApprGui(chb$item) -padx 2 -anchor w
@@ -97,7 +100,7 @@ proc Gui {} {
  
   pack [TitleFrame $mf.frApprover -text "Approver" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
     set fr [$mf.frApprover getframe]
-    set lab [Label $fr.lab -text "Appover's Empl. Number"]
+    set lab [Label $fr.lab -text "Appover's Employee Number"]
     set gaApprGui(entAppEmplNumber) [Entry $fr.entAppEmplNumber -justify center -width 10 -state normal -editable 1 ]
     grid $lab $gaApprGui(entAppEmplNumber) -padx 2 -pady 3 -sticky ew
   
@@ -277,6 +280,17 @@ proc UnCheckAI {} {
   $gaApprGui(lbSelAI) delete $unit
 }
 # ***************************************************************************
+# CopyItem
+# ***************************************************************************
+proc CopyItem {w} {
+  global gaApprGui
+  set w [winfo parent $w]
+  set unit [$w curselection] ; #[$gaApprGui(lbAI) curselection]
+  clipboard clear
+  update idletasks
+  clipboard append $unit
+}
+# ***************************************************************************
 # ButCancGuiEco
 # ***************************************************************************
 proc ButCancGuiEco {} {
@@ -295,6 +309,7 @@ proc ButApproveGuiEco {} {
   if {$ret==0} {
     DialogBox -title "Approve done" -text "[$gaApprGui(entEco) cget -text] approved successfully" -icon /images/info
     ToggleListBox
+    $gaApprGui(entEco)  configure -text ""
   }
 }
 # ***************************************************************************
@@ -329,7 +344,8 @@ proc MoveEcoFromRNAtoRA {} {
       catch {dataBase eval {SELECT * from ReleasedNotApproved WHERE ECO=$eco}} ecoData
       after 1000
       catch {dataBase eval {DELETE from ReleasedNotApproved WHERE ECO=$eco}} delres
-      puts "delres:<$delres>"
+      puts "delres:<$delres>"      
+      $gaApprGui(lbAI) delete [$gaApprGui(lbAI) items]
     } elseif {$::appEcAi=="apprSelItems"} {
       set selectedItems [$gaApprGui(lbSelAI) items] ; set where ""
       foreach selItem $selectedItems {
