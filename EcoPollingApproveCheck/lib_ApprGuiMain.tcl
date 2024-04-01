@@ -57,7 +57,7 @@ proc Gui {} {
           scrollbar $fr345.yscroll -command {$gaApprGui(lbAI) yview} -orient vertical
           pack   $fr345.yscroll -side right -fill y
           set gaApprGui(lbAI) [ListBox $fr345.lbAI -yscrollcommand "$fr345.yscroll set" \
-              -height 6 -width 20 -selectmode single]
+              -height 6 -width 50 -selectmode single]
           bind $gaApprGui(lbAI)  <Double-1> {CheckAI}  
                  
           pack $gaApprGui(lbAI) -side left -fill both -expand 1 
@@ -69,7 +69,7 @@ proc Gui {} {
           scrollbar $fr678.yscroll -command {$gaApprGui(lbSelAI) yview} -orient vertical
           pack   $fr678.yscroll -side right -fill y
           set gaApprGui(lbSelAI) [ListBox $fr678.lbSelAI -yscrollcommand "$fr678.yscroll set" \
-              -height 6 -width 24 -selectmode single]
+              -height 6 -width 50 -selectmode single]
           DynamicHelp::add $gaApprGui(lbSelAI) -text "Click Right Mouse Button to paste copied Item/s"
           bind $gaApprGui(lbSelAI)  <Double-1> {UnCheckAI} 
           bind $gaApprGui(lbSelAI)  <ButtonRelease-3>  {AddAffectedItemsPop %X %Y}   

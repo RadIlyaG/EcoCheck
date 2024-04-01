@@ -2,7 +2,7 @@ package require sqlite3
 set db_file     //prod-svm1/tds/Temp/SQLiteDB/EcoCheck.db
 set ecoFilePath //prod-svm1/tds/Temp/SQLiteDB/EcoNoiNpi
 package require json
-#console show
+console show
 
 
 # ***************************************************************************
