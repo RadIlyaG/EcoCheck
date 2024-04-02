@@ -39,10 +39,10 @@ proc Gui {} {
       set fr123 [frame $gaApprGui(frANewListBox).fr123 -bd 2 -relief groove] 
         scrollbar $fr123.yscroll -command {$gaApprGui(lbANew) yview} -orient vertical
         pack   $fr123.yscroll -side right -fill y
-        set gaApprGui(lbANew) [listbox $fr123.lbANew -yscrollcommand "$fr123.yscroll set" \
+        set gaApprGui(lbANew) [ListBox $fr123.lbANew -yscrollcommand "$fr123.yscroll set" \
             -height 3 -width 12 -selectmode single]
         bind $gaApprGui(lbANew)  <Double-1> {EcoToHandle} 
-        bind $gaApprGui(lbANew)  <ButtonRelease-1> {EcoToHandle} 
+        bind $gaApprGui(lbANew)  <1> {EcoToHandle} 
         bind $gaApprGui(lbANew)  <<Copy>> {CopyItem %W}  
         pack $gaApprGui(lbANew) -side left -fill both -expand 1 
       grid $fr123 -sticky nswe  
@@ -58,7 +58,7 @@ proc Gui {} {
           pack [label $fr345.l1 -text "All Affected Items"]
           scrollbar $fr345.yscroll -command {$gaApprGui(lbAI) yview} -orient vertical
           pack   $fr345.yscroll -side right -fill y
-          set gaApprGui(lbAI) [listbox $fr345.lbAI -yscrollcommand "$fr345.yscroll set" \
+          set gaApprGui(lbAI) [ListBox $fr345.lbAI -yscrollcommand "$fr345.yscroll set" \
               -height 6 -width 45 -selectmode single]
           bind $gaApprGui(lbAI)  <Double-1> {CheckAI}  
           bind $gaApprGui(lbAI)  <<Copy>> {CopyItem %W}  
@@ -71,7 +71,7 @@ proc Gui {} {
           pack [label $fr678.l1 -text "Selected Affected Items"]
           scrollbar $fr678.yscroll -command {$gaApprGui(lbSelAI) yview} -orient vertical
           pack   $fr678.yscroll -side right -fill y
-          set gaApprGui(lbSelAI) [listbox $fr678.lbSelAI -yscrollcommand "$fr678.yscroll set" \
+          set gaApprGui(lbSelAI) [ListBox $fr678.lbSelAI -yscrollcommand "$fr678.yscroll set" \
               -height 6 -width 45 -selectmode single]
           DynamicHelp::add $gaApprGui(lbSelAI) -text "Click Right Mouse Button to paste copied Item/s"
           bind $gaApprGui(lbSelAI)  <Double-1> {UnCheckAI} 
@@ -149,7 +149,7 @@ proc AddAffectedItems {} {
 # ***************************************************************************
 proc ClearAffectedItems {} {
   global gaApprGui
-  $gaApprGui(lbSelAI) delete 0 end
+  $gaApprGui(lbSelAI) delete [$gaApprGui(lbSelAI) items]
 }
 
 # ***************************************************************************
@@ -171,8 +171,8 @@ proc ToggleListBox {} {
     set ::appEcAi apprSelItems
     $gaApprGui(lbANew) configure -state disabled
     $gaApprGui(entEco) delete 0 end
-    $gaApprGui(lbAI) delete 0 end
-    $gaApprGui(lbSelAI) delete 0 end
+    $gaApprGui(lbAI) delete [$gaApprGui(lbAI) items]
+    $gaApprGui(lbSelAI) delete [$gaApprGui(lbSelAI) items]
     $gaApprGui(lbANew) selection clear
     #$gaApprGui(entAiA) configure -state normal
     # grid forget $gaApprGui(frANewListBox) 
@@ -202,10 +202,10 @@ proc CheckRnADB {} {
   catch {lsort -unique [dataBase eval "Select ECO from ReleasedNotApproved"]} ecos
   puts "ecos:<$ecos>"
   dataBase close
-  $gaApprGui(lbANew) delete  0 end
+  $gaApprGui(lbANew) delete [$gaApprGui(lbANew) items]
   if [llength $ecos] {
     foreach eco $ecos {
-      $gaApprGui(lbANew) insert end $eco
+      $gaApprGui(lbANew) insert end $eco -text $eco
       
     }  
     $gaApprGui(lbANew) configure -height [expr {0+[llength $ecos]}]
@@ -217,16 +217,11 @@ proc CheckRnADB {} {
 # ***************************************************************************
 proc EcoToHandle {} {
   global gaApprGui
-  update
-  set indx [$gaApprGui(lbANew) curselection]
-  puts "EcoToHandle <$indx>"
-  if {$indx!=""} {
-    set cell [$gaApprGui(lbANew) get $indx]
-    $gaApprGui(entEco) delete 0 end
-    $gaApprGui(entEco) insert end $cell
-  }
-  $gaApprGui(lbAI) delete 0 end
-  $gaApprGui(lbSelAI) delete 0 end
+  set cell [$gaApprGui(lbANew) curselection]
+  $gaApprGui(entEco) delete 0 end
+  $gaApprGui(entEco) insert end $cell
+  $gaApprGui(lbAI) delete [$gaApprGui(lbAI) items]
+  $gaApprGui(lbSelAI) delete [$gaApprGui(lbSelAI) items]
   set ret [DbFileExists]
   if {$ret!=0} {return $ret}
   set ret [CheckAIDB]
@@ -256,10 +251,10 @@ proc CheckAIDB {} {
   catch {lsort -unique [dataBase eval {SELECT Unit from ReleasedNotApproved WHERE ECO=$eco}]} units
   #puts "units:<$units>"
   dataBase close
-  $gaApprGui(lbAI) delete 0 end
+  $gaApprGui(lbAI) delete [$gaApprGui(lbAI) items]
   if [llength $units] {
     foreach unit $units {
-      $gaApprGui(lbAI) insert end $unit
+      $gaApprGui(lbAI) insert end $unit -text $unit
     }  
   }
   return 0
@@ -269,11 +264,11 @@ proc CheckAIDB {} {
 # ***************************************************************************
 proc CheckAI {} {
   global gaApprGui
-  set indx [$gaApprGui(lbAI) curselection]
-  set unit [$gaApprGui(lbAI) get $indx]
-  if {[lsearch [$gaApprGui(lbSelAI) get 0 end] $unit]=="-1"} {
-    $gaApprGui(lbSelAI) insert end $unit
-    $gaApprGui(lbSelAI) see end
+  set unit [$gaApprGui(lbAI) curselection]
+  #puts "$unit [$gaApprGui(lbAI) exists $unit] [$gaApprGui(lbAI) items]"
+  if ![$gaApprGui(lbSelAI) exists $unit] {
+    $gaApprGui(lbSelAI) insert end $unit -text $unit
+    $gaApprGui(lbSelAI) see $unit
   }
 }
 # ***************************************************************************
@@ -308,19 +303,14 @@ proc ButApproveGuiEco {} {
   global gaApprGui
   set ret [Sanity]
   if {$ret!=0} {return $ret}
-    
+  
+  
   set ret [MoveEcoFromRNAtoRA]
   if {$ret==0} {
     DialogBox -title "Approve done" -text "[$gaApprGui(entEco) cget -text] approved successfully" -icon /images/info
     ToggleListBox
-    if {$::rbMode=="apprNewRel"} { 
-      if {$::appEcAi=="apprWholeEco"} {
-        $gaApprGui(entEco) configure -text ""
-      } elseif {$::appEcAi=="apprSelItems"} {
-      
-      }
-    }
-  }  
+    $gaApprGui(entEco)  configure -text ""
+  }
 }
 # ***************************************************************************
 # ButSaveGuiEco
@@ -355,9 +345,9 @@ proc MoveEcoFromRNAtoRA {} {
       after 1000
       catch {dataBase eval {DELETE from ReleasedNotApproved WHERE ECO=$eco}} delres
       puts "delres:<$delres>"      
-      $gaApprGui(lbAI) delete 0 end
+      $gaApprGui(lbAI) delete [$gaApprGui(lbAI) items]
     } elseif {$::appEcAi=="apprSelItems"} {
-      set selectedItems [$gaApprGui(lbSelAI) get 0 end] ; set where ""
+      set selectedItems [$gaApprGui(lbSelAI) items] ; set where ""
       foreach selItem $selectedItems {
         append where " Unit = \'$selItem\' OR"
       }
@@ -369,7 +359,7 @@ proc MoveEcoFromRNAtoRA {} {
       puts "delres:<$delres>"
     }
   } elseif {$::rbMode=="apprInAdv"} { 
-    set selectedItems [$gaApprGui(lbSelAI) get 0 end]
+    set selectedItems [$gaApprGui(lbSelAI) items]
     foreach selItem $selectedItems {
        lappend ecoData $eco $selItem $apprDate
     } 
@@ -389,7 +379,7 @@ proc MoveEcoFromRNAtoRA {} {
   puts "res:<$res>"
   dataBase close
   
-  $gaApprGui(lbSelAI) delete 0 end
+  $gaApprGui(lbSelAI) delete [$gaApprGui(lbSelAI) items]
   return 0  
 }
 # ***************************************************************************
@@ -408,7 +398,7 @@ proc Sanity {} {
     return -1
   }
   
-  set selectedItems [$gaApprGui(lbSelAI) get 0 end]
+  set selectedItems [$gaApprGui(lbSelAI) items]
   if {$::appEcAi=="apprSelItems" && $selectedItems==""} {
     tk_messageBox -title "Sanity check" -icon error -type ok \
       -message "No Affected Items to approve"
