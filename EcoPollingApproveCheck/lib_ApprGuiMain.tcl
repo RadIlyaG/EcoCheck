@@ -208,7 +208,7 @@ proc CheckRnADB {} {
       $gaApprGui(lbANew) insert end $eco
       
     }  
-    $gaApprGui(lbANew) configure -height [expr {0+[llength $ecos]}]
+    $gaApprGui(lbANew) configure -height 6 ; #[expr {0+[llength $ecos]}]
   }
   return 0
 }
