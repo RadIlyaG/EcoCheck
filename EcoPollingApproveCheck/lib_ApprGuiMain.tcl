@@ -15,6 +15,9 @@ proc Gui {} {
   set ::appEcAi apprWholeEco
   
   set mainframe [MainFrame .mainframe]
+    set gaApprGui(ind_ver) [$mainframe addindicator]
+    $gaApprGui(ind_ver) configure -text "0.0"
+    
     set tb0 [$mainframe addtoolbar]
     pack $tb0 -fill x
     set bb [ButtonBox $tb0.bbox0 -spacing 1 -padx 5 -pady 5]
@@ -568,3 +571,4 @@ proc Quit {} {
       -text "Are you sure you want to close the application?"]
   if {$ret=="yes"} {exit}
 }
+
