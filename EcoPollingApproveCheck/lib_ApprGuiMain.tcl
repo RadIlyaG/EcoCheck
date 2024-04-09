@@ -16,7 +16,7 @@ proc Gui {} {
   
   set mainframe [MainFrame .mainframe]
     set gaApprGui(ind_ver) [$mainframe addindicator]
-    $gaApprGui(ind_ver) configure -text "0.0"
+    $gaApprGui(ind_ver) configure -text "1.0"
     
     set tb0 [$mainframe addtoolbar]
     pack $tb0 -fill x
@@ -85,35 +85,50 @@ proc Gui {} {
       
     set fr2 [frame $fr.fr2 -bd 2 -relief groove]  
       set gaApprGui(rbApprWholeEco) [radiobutton $fr2.rbApprWholeEco -text "Approve whole ECO/NPI/NFI"\
-          -value apprWholeEco -variable ::appEcAi]
+          -value apprWholeEco -variable ::appEcAi -command ToggleWholeSelected]
       set gaApprGui(rbApprAffInits) [radiobutton $fr2.rbApprAffInits -text "Approve selected Affected Items"\
-          -value apprSelItems -variable ::appEcAi]
+          -value apprSelItems -variable ::appEcAi -command ToggleWholeSelected]
       pack $gaApprGui(rbApprWholeEco) $gaApprGui(rbApprAffInits) -anchor w -padx 2
     pack $fr1 $fr2 -fill both -padx 2 -pady 2 
 
   pack [TitleFrame $mf.frVerItems -text "Verified Items" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
     set fr [$mf.frVerItems getframe]
     set fr1 [frame $fr.fr1]
-      foreach item [list fti ucf ate mech] itemName [list "FTI" "User Configuration File" "ATE Adjustment" "Mechanics"] {
+      set itemNameL  [list "Default configuration" "Change in Mechanical parts (FAN, Power supplies...)"]
+      lappend itemNameL "Effect on FTI (changing in conf , adding test...)" "SW Version" "Boot Version"
+      lappend itemNameL  "CPLD Version" "ATE Adjustment"
+      foreach itemName $itemNameL {
+        set item [string tolower [string range [join $itemName ""] 0 4]]
         set gaApprGui(chb$item) [checkbutton $fr1.chb$item -text $itemName -variable ::verItems$item]
         array set ::gaVerItems [list $item $itemName]
-        pack $gaApprGui(chb$item) -padx 2 -anchor w
+        # pack $gaApprGui(chb$item) -padx 2 -anchor w
+        set index [lsearch $itemNameL $itemName]
+        grid $gaApprGui(chb$item) -padx 2 -row [expr {$index / 2}] -column [expr {$index % 2}] -sticky w
       }
     pack $fr1 -fill both -padx 2 -pady 2 
  
-  pack [TitleFrame $mf.frApprover -text "Approver" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
-    set fr [$mf.frApprover getframe]
+  # pack [TitleFrame $mf.frApprover -text "Approver" -bd 2 -relief groove] -padx 2 -pady 2 -fill both
+    # set fr [$mf.frApprover getframe]
+  pack [frame $mf.frApprover  -bd 2 -relief groove] -padx 2 -pady 2 -fill both
+    set fr $mf.frApprover
     set lab [Label $fr.lab -text "Appover's Employee Number"]
-    set gaApprGui(entAppEmplNumber) [Entry $fr.entAppEmplNumber -justify center -width 10 -state normal -editable 1 ]
-    grid $lab $gaApprGui(entAppEmplNumber) -padx 2 -pady 3 -sticky ew
+    set gaApprGui(entAppEmplNumber) [Entry $fr.entAppEmplNumber -justify center -width 10 -state normal -editable 1 ]    
+    set but [Button $fr.butSaveNew -text "Approve" -command [list ButApproveGuiEco ] -width 11]
+    grid $lab $gaApprGui(entAppEmplNumber) $but -padx 2 -pady 3 -sticky w
+    grid configure $but -padx 12
+  pack $fr -padx 2 -pady 2 -fill both 
   
-  pack [frame $mf.frBut ] -pady 4 -anchor e
-    pack [Button $mf.frBut.butSaveNew -text "Approve" -command [list ButApproveGuiEco ] -width 11]  -side right -padx 6
+  # pack [frame $mf.frBut ] -pady 4 -anchor e
+    # pack [Button $mf.frBut.butSaveNew -text "Approve" -command [list ButApproveGuiEco ] -width 11]  -side right -padx 6
     
   pack $mainframe -fill both -expand yes
   ToggleListBox
+  ToggleWholeSelected
   
   bind . <F1> {console show}
+  bind . <Alt-s> {ToogleVerifyChB 1}
+  bind . <Alt-d> {ToogleVerifyChB 0}
+  bind . <Alt-a> {ButApproveGuiEco}
   return 0
 }
 
@@ -311,11 +326,25 @@ proc ButApproveGuiEco {} {
   global gaApprGui
   set ret [Sanity]
   if {$ret!=0} {return $ret}
-    
-  set ret [MoveEcoFromRNAtoRA]
+  
+  if {$ret==0} {
+    if {$::appEcAi=="apprWholeEco"} {
+      set txt "Whole ECO/NPI is going to be approved.\nAre you sure?"
+    } else {
+      set txt "Just selected items are going to be approved.\nAre you sure?"
+    }
+    set res [DialogBox -title "Warning" -text $txt -icon /images/info -type "Yes No"]
+    if {$res=="No"} {
+      set ret -1
+    }
+  }
+  if {$ret==0} {  
+    set ret [MoveEcoFromRNAtoRA]
+  }
   if {$ret==0} {
     DialogBox -title "Approve done" -text "[$gaApprGui(entEco) cget -text] approved successfully" -icon /images/info
     ToggleListBox
+    ToogleVerifyChB 0
     if {$::rbMode=="apprNewRel"} { 
       if {$::appEcAi=="apprWholeEco"} {
         $gaApprGui(entEco) configure -text ""
@@ -572,3 +601,31 @@ proc Quit {} {
   if {$ret=="yes"} {exit}
 }
 
+# ***************************************************************************
+# ToggleWholeSelected
+# ***************************************************************************
+proc ToggleWholeSelected {} {
+  global gaApprGui  
+  set actFG SystemButtonText
+  set actBG SystemWindow 
+  set non_actFG gray
+  set non_actBG LightCyan3 
+  if {$::appEcAi=="apprWholeEco"} {
+    $gaApprGui(lbAI)    configure -foreground $actFG -background $actBG
+    $gaApprGui(lbSelAI) configure -foreground $non_actFG -background $non_actBG
+    focus $gaApprGui(lbAI)
+  } else {
+    $gaApprGui(lbAI)    configure -foreground $non_actFG -background $non_actBG
+    $gaApprGui(lbSelAI) configure -foreground $actFG -background $actBG
+    focus $gaApprGui(lbSelAI)
+  }
+}
+# ***************************************************************************
+# ToogleVerifyChB
+# ***************************************************************************
+proc ToogleVerifyChB {state} {
+  foreach item [array names ::gaVerItems] {
+      set ::verItems$item $state
+   }
+    
+}
