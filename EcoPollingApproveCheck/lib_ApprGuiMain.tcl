@@ -96,7 +96,7 @@ proc Gui {} {
     set fr1 [frame $fr.fr1]
       set itemNameL  [list "Default configuration" "Change in Mechanical parts (FAN, Power supplies...)"]
       lappend itemNameL "Effect on FTI (changing in conf , adding test...)" "SW Version" "Boot Version"
-      lappend itemNameL  "CPLD Version" "ATE Adjustment"
+      lappend itemNameL  "CPLD Version" "ATE compatible to FTI"
       foreach itemName $itemNameL {
         set item [string tolower [string range [join $itemName ""] 0 4]]
         set gaApprGui(chb$item) [checkbutton $fr1.chb$item -text $itemName -variable ::verItems$item]
