@@ -76,7 +76,7 @@ proc Gui {} {
           pack   $fr678.yscroll -side right -fill y
           set gaApprGui(lbSelAI) [listbox $fr678.lbSelAI -yscrollcommand "$fr678.yscroll set" \
               -height 6 -width 45 -selectmode single]
-          DynamicHelp::add $gaApprGui(lbSelAI) -text "Click Right Mouse Button to paste copied Item/s"
+          #DynamicHelp::add $gaApprGui(lbSelAI) -text "Click Right Mouse Button to paste copied Item/s"
           bind $gaApprGui(lbSelAI)  <Double-1> {UnCheckAI} 
           bind $gaApprGui(lbSelAI)  <ButtonRelease-3>  {AddAffectedItemsPop %X %Y}   
           bind $gaApprGui(lbSelAI)  <<Paste>> {AddAffectedItems}           
@@ -144,7 +144,7 @@ proc AddAffectedItemsPop {x y} {
   menu .popup -tearoff off
   .popup delete 0
   update idletasks
-  .popup add command -label "Add Items to List" -command [list AddAffectedItems]
+  #.popup add command -label "Add Items to List" -command [list AddAffectedItems]
   .popup add command -label "Clear the List"  -command [list ClearAffectedItems]
   tk_popup .popup $x $y
 }
