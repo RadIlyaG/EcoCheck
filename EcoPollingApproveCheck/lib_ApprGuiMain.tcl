@@ -307,7 +307,8 @@ proc UnCheckAI {} {
 # ***************************************************************************
 proc CopyItem {w} {
   global gaApprGui
-  set w [winfo parent $w]
+  #puts "CopyItem w:<$w>"
+  #set w [winfo parent $w]
   set unit [$w curselection] ; #[$gaApprGui(lbAI) curselection]
   clipboard clear
   update idletasks
