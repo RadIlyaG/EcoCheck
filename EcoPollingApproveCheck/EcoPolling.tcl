@@ -14,11 +14,17 @@ proc MainEcoPolling {} {
   return $ret
 }
 # ***************************************************************************
+# MyTime
+# ***************************************************************************
+proc MyTime {} {
+  return [clock format [clock second] -format %Y/%m/%d_%H:%M:%S]
+}
+# ***************************************************************************
 # AddToLog
 # ***************************************************************************
 proc AddToLog {txt} {
   set id [open $::log a+]
-  puts $id "[clock format [clock second] -format %Y/%m/%d_%H:%M:%S] $txt"
+  puts $id "[MyTime] $txt"
   close $id
 }
 # ***************************************************************************
@@ -40,10 +46,10 @@ proc ReadEcoFiles {} {
     if [llength $ecoFiles] {
       foreach ecoFile $ecoFiles {
         set di [set ret [ReadEcoFile $ecoFile] ]
-        puts "ret of ReadEcoFile: <$ret>"        
+        puts "[MyTime] ret of ReadEcoFile" ; # ": <$ret>"        
         if {$ret=="-1"} {break}  
         set ret [EcoData2DB $ecoFile $di]  
-        puts "ret of EcoData2DB: <$ret>"  
+        puts "[MyTime] ret of EcoData2DB: <$ret>"  
         if {$ret=="emailAndDelete"} {
           ## ECO was added to ReleasedNotApproved
           set ret [SendEmail $ecoFile]   
@@ -66,7 +72,7 @@ proc ReadEcoFiles {} {
 # ReadEcoFile
 # ***************************************************************************
 proc ReadEcoFile {ecoFile} {
-  puts "\nReadEcoFile $ecoFile"
+  puts "\n[MyTime] Start ReadEcoFile $ecoFile"
   set ecoTail [file tail $ecoFile]
   set ecoFileName [lindex [split $ecoTail .] 0]
   if [catch {open $ecoFile r+} id] {
@@ -83,11 +89,11 @@ proc ReadEcoFile {ecoFile} {
       }  
     }  
     close $id
-    puts "ecoFile:<$ecoFile> body:<$body>" 
+    ## 11:20 20/04/2025 puts "ecoFile:<$ecoFile> body:<$body>" 
     
     set asadict [::json::json2dict $body]
     foreach {name wotsit} $asadict {
-      puts "<$name> <$wotsit> [llength $wotsit]"
+      ## 11:20 20/04/2025 puts "<$name> <$wotsit> [llength $wotsit]"
       dict set di $name $wotsit
       # if {[llength $wotsit]==1} {
         # puts "1 $name $wotsit"
@@ -110,12 +116,13 @@ proc ReadEcoFile {ecoFile} {
 # EcoData2DB
 # ***************************************************************************
 proc EcoData2DB {ecoFile di} {
-  puts "\nEcoData2DB $ecoFile $di"
+  puts "\n[MyTime] EcoData2DB $ecoFile"; # $di
   set ecoTail [file tail $ecoFile]
   set ecoFileName [lindex [split $ecoTail .] 0]
   #set ecoUnits [lsort -dictionary [set ::a${ecoFileName}(AI)]]
   set ecoUnits [lsort -dictionary [dict get $di "AffectedItems"]]
-  puts "EcoData2DB ecoUnits:<$ecoUnits>"
+  ## 11:20 20/04/2025 puts "EcoData2DB ecoUnits:<$ecoUnits>"
+  puts "EcoData2DB qty of ecoUnits:<[llength $ecoUnits]>"
   
   ## meantime all products/units, mentioned in YZ' file, should be inserted to ReleasedNotApproved
   set initsToReleasedNotApproved $ecoUnits
@@ -159,7 +166,8 @@ proc EcoData2DB {ecoFile di} {
       }
     }
   }  
-  puts "initsToReleasedNotApproved:<$initsToReleasedNotApproved>"
+  # 11:21 20/04/2025 puts "initsToReleasedNotApproved:<$initsToReleasedNotApproved>"
+  puts "qty of initsToReleasedNotApproved:<[llength $initsToReleasedNotApproved]>"
   
   ## add products/units to ReleasedNotApproved
   foreach unit $initsToReleasedNotApproved {
