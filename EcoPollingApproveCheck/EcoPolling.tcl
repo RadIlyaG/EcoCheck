@@ -116,13 +116,13 @@ proc ReadEcoFile {ecoFile} {
 # EcoData2DB
 # ***************************************************************************
 proc EcoData2DB {ecoFile di} {
-  puts "\n[MyTime] EcoData2DB $ecoFile"; # $di
+  puts "\n[MyTime] EcoData2DB $ecoFile"; update; # $di; update
   set ecoTail [file tail $ecoFile]
   set ecoFileName [lindex [split $ecoTail .] 0]
   #set ecoUnits [lsort -dictionary [set ::a${ecoFileName}(AI)]]
   set ecoUnits [lsort -dictionary [dict get $di "AffectedItems"]]
   ## 11:20 20/04/2025 puts "EcoData2DB ecoUnits:<$ecoUnits>"
-  puts "EcoData2DB qty of ecoUnits:<[llength $ecoUnits]>"
+  puts "EcoData2DB qty of ecoUnits:<[llength $ecoUnits]>"; update
   
   ## meantime all products/units, mentioned in YZ' file, should be inserted to ReleasedNotApproved
   set initsToReleasedNotApproved $ecoUnits
@@ -140,7 +140,7 @@ proc EcoData2DB {ecoFile di} {
   ## all of units from this list will not insert to ReleasedNotApproved
   catch {dataBase eval {SELECT Unit from ReleasedApproved WHERE (ECO = $ecoFileName AND ApprInAdv = 'yes')}} yesAiAunits
   set yesAiAunits [lsort -dictionary $yesAiAunits]
-  puts "yesAiAunits:<$yesAiAunits>"
+  puts "[MyTime] yesAiAunits:<$yesAiAunits>"; update
   
   # if 0 {
   # set initsToReleasedNotApproved ""
@@ -167,20 +167,25 @@ proc EcoData2DB {ecoFile di} {
     }
   }  
   # 11:21 20/04/2025 puts "initsToReleasedNotApproved:<$initsToReleasedNotApproved>"
-  puts "qty of initsToReleasedNotApproved:<[llength $initsToReleasedNotApproved]>"
+  puts "[MyTime] qty of initsToReleasedNotApproved:<[llength $initsToReleasedNotApproved]>"; update
   
   ## add products/units to ReleasedNotApproved
+  set number [dict get $di "Change Number"]
+  set relDate [dict get $di "Change release date"]
+  dataBase eval {BEGIN TRANSACTION}
   foreach unit $initsToReleasedNotApproved {
-    #set number [set ::a${ecoFileName}(number)]
-    set number [dict get $di "Change Number"]
-    #set relDate [set ::a${ecoFileName}(releise_date)]
-    set relDate [dict get $di "Change release date"]
+    ##set number [set ::a${ecoFileName}(number)]
+    #set number [dict get $di "Change Number"]
+    ##set relDate [set ::a${ecoFileName}(releise_date)]
+    #set relDate [dict get $di "Change release date"]
     if [catch {dataBase eval {INSERT INTO ReleasedNotApproved VALUES($number,$unit,$relDate)}} res] {
-      puts "res INSERT INTO ReleasedNotApproved $unit: <$res>"
+      puts "res INSERT INTO ReleasedNotApproved $unit: <$res>"; update
     }
     
   }
+  dataBase eval {COMMIT}
   dataBase close
+  puts "[MyTime] after INSERT"; update
   
   if [llength $initsToReleasedNotApproved] {
     set ret emailAndDelete
@@ -195,7 +200,7 @@ proc EcoData2DB {ecoFile di} {
 # ***************************************************************************
 proc SendEmail {ecoFile} {
   set ecoFileName [lindex [split [file tail $ecoFile] .] 0]
-  puts "\nSendEmail $ecoFileName"
+  puts "\n[MyTime]  SendEmail $ecoFileName"; update
   return 0
 }
 # ***************************************************************************
